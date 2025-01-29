@@ -1,7 +1,7 @@
 import yfinance as yf
 import pandas as pd
 
-def fetch_historical_data(tickers, start_date='1980-01-01', end_date='2023-12-31'):
+def fetch_historical_data(tickers, start_date='1900-01-01', end_date='2024-12-31'):
     """
     Fetch historical market data using yfinance
     Returns annual returns for specified tickers
