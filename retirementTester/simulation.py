@@ -13,7 +13,7 @@ def run_retirement_simulation(params):
         tuple: (simulation results DataFrame, depletion probability, best_simulation, worst_simulation)
     """
     required_keys = ['initial_portfolio', 'asset_allocation', 
-                     'annual_withdrawal', 'retirement_years', 'n_simulations']
+                     'annual_withdrawal', 'retirement_years', 'n_simulations', 'tickers']
     if not all(key in params for key in required_keys):
         raise ValueError("Missing required parameters in input dictionary")
 
@@ -22,8 +22,9 @@ def run_retirement_simulation(params):
     withdrawal = params['annual_withdrawal']
     years = params['retirement_years']
     n_sims = params['n_simulations']
+    tickers = params['tickers']
 
-    returns_data = fetch_historical_data(['SPY', 'IEF'])
+    returns_data = fetch_historical_data(tickers)
     
     simulations = []
     depletion_count = 0
@@ -51,8 +52,8 @@ def run_retirement_simulation(params):
             
             portfolio -= withdrawal
 
-            stock_return = selected_returns.iloc[year]['SPY']
-            bond_return = selected_returns.iloc[year]['IEF']
+            stock_return = selected_returns.iloc[year]['^GSPC']
+            bond_return = selected_returns.iloc[year]['^FVX']
             portfolio *= (allocation['stocks'] * (1 + stock_return) +
                          allocation['bonds'] * (1 + bond_return))
 
