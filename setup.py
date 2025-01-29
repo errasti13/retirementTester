@@ -10,12 +10,12 @@ setup(
         "numpy",
         "matplotlib"
     ],
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="Jon Errasti",
+    author_email="errasti13@gmail.com",
     description="A retirement portfolio simulation tool using historical market data.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/retirement_simulation",  # Update with your actual repo
+    url="https://github.com/errasti13/retirement_simulation",  # Update with your actual repo
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
