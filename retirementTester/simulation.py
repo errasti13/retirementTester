@@ -1,78 +1,86 @@
+from typing import Tuple, List, Optional
 import numpy as np
 import pandas as pd
+import logging
 from .data import fetch_historical_data
+from .utils import SimulationParams
 
-def run_retirement_simulation(params):
+logger = logging.getLogger(__name__)
+
+def run_retirement_simulation(
+    params: SimulationParams
+) -> Tuple[pd.DataFrame, float, List[float], List[float]]:
     """
     Run a Monte Carlo simulation for retirement portfolio analysis.
     
     Args:
-        params (dict): Dictionary containing simulation parameters
+        params: SimulationParams object containing simulation parameters.
     
     Returns:
-        tuple: (simulation results DataFrame, depletion probability, best_simulation, worst_simulation)
+        Tuple containing:
+            - DataFrame with simulation results
+            - Probability of portfolio depletion
+            - Best case simulation history
+            - Worst case simulation history
+            
+    Raises:
+        ValueError: If historical data is insufficient or other validation fails.
     """
-    required_keys = ['initial_portfolio', 'annual_withdrawal', 
-                     'retirement_years', 'n_simulations', 'assets']
-    if not all(key in params for key in required_keys):
-        raise ValueError("Missing required parameters in input dictionary")
-
-    initial_value = params['initial_portfolio']
-    withdrawal = params['annual_withdrawal']
-    years = params['retirement_years']
-    n_sims = params['n_simulations']
-    assets = params['assets']
-
-    tickers = [asset['ticker'] for asset in assets.values()]
-    returns_data = fetch_historical_data(tickers)
-    
-    simulations = []
-    depletion_count = 0
-    best_simulation = None
-    worst_simulation = None
-    best_final_value = float('-inf')
-    worst_final_value = float('inf')
-
-    for _ in range(n_sims):
-        portfolio = initial_value
-        history = []
-        depleted = False
+    try:
+        tickers = tuple(asset['ticker'] for asset in params.assets.values())  # Convert to tuple
+        returns_data = fetch_historical_data(tickers)
         
-        max_start = len(returns_data) - years
-        if max_start <= 0:
-            raise ValueError("Insufficient historical data for simulation period")
-        
-        start_idx = np.random.randint(0, max_start)
-        selected_returns = returns_data.iloc[start_idx:start_idx+years]
-        
-        for year in range(years):
-            if portfolio <= 0:
-                depleted = True
-                break
+        simulations = []
+        depletion_count = 0
+        best_simulation = None
+        worst_simulation = None
+        best_final_value = float('-inf')
+        worst_final_value = float('inf')
+
+        for _ in range(params.n_simulations):
+            portfolio = params.initial_portfolio
+            history = []
+            depleted = False
             
-            portfolio -= withdrawal
-
-            for _, asset_info in assets.items():
-                ticker = asset_info['ticker']
-                allocation = asset_info['allocation']
-                asset_return = selected_returns.iloc[year][ticker]
-                portfolio += portfolio * allocation * asset_return
-
-            history.append(portfolio)
-        
-        if depleted or portfolio <= 0:
-            depletion_count += 1
-            history += [0] * (years - len(history))
+            max_start = len(returns_data) - params.retirement_years
+            if max_start <= 0:
+                raise ValueError("Insufficient historical data for simulation period")
             
-        final_value = history[-1] if history else 0
-        if final_value > best_final_value:
-            best_final_value = final_value
-            best_simulation = history.copy()
-        if final_value < worst_final_value:
-            worst_final_value = final_value
-            worst_simulation = history.copy()
+            start_idx = np.random.randint(0, max_start)
+            selected_returns = returns_data.iloc[start_idx:start_idx+params.retirement_years]
             
-        simulations.append(history)
+            for year in range(params.retirement_years):
+                if portfolio <= 0:
+                    depleted = True
+                    break
+                
+                portfolio -= params.annual_withdrawal
 
-    results_df = pd.DataFrame(simulations)
-    return results_df, depletion_count / n_sims, best_simulation, worst_simulation
+                for _, asset_info in params.assets.items():
+                    ticker = asset_info['ticker']
+                    allocation = asset_info['allocation']
+                    asset_return = selected_returns.iloc[year][ticker]
+                    portfolio += portfolio * allocation * asset_return
+
+                history.append(portfolio)
+            
+            if depleted or portfolio <= 0:
+                depletion_count += 1
+                history += [0] * (params.retirement_years - len(history))
+                
+            final_value = history[-1] if history else 0
+            if final_value > best_final_value:
+                best_final_value = final_value
+                best_simulation = history.copy()
+            if final_value < worst_final_value:
+                worst_final_value = final_value
+                worst_simulation = history.copy()
+                
+            simulations.append(history)
+
+        results_df = pd.DataFrame(simulations)
+        return results_df, depletion_count / params.n_simulations, best_simulation, worst_simulation
+
+    except Exception as e:
+        logger.error(f"Simulation failed: {e}")
+        raise
