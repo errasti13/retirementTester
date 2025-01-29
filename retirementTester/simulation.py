@@ -52,7 +52,7 @@ def run_retirement_simulation(params):
             
             portfolio -= withdrawal
 
-            for asset_name, asset_info in assets.items():
+            for _, asset_info in assets.items():
                 ticker = asset_info['ticker']
                 allocation = asset_info['allocation']
                 asset_return = selected_returns.iloc[year][ticker]
