@@ -21,7 +21,7 @@ def fetch_historical_data(tickers, start_date='1900-01-01', end_date='2024-12-31
             raise RuntimeError(f"'Close' prices not found. Available columns: {data.keys()}")
 
         close_prices = data['Close']
-        daily_returns = close_prices.pct_change().dropna()
+        daily_returns = close_prices.pct_change(fill_method=None).dropna()
         annual_returns = daily_returns.resample('YE').apply(lambda x: (1 + x).prod() - 1)
 
         return annual_returns

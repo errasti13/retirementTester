@@ -21,6 +21,10 @@ def visualize_results(results_df, depletion_prob, params, best_sim, worst_sim):
     ax.plot(worst_sim, color='red', linewidth=2, linestyle=':', label='Worst Case')
     ax.plot(best_sim, color='green', linewidth=2, linestyle=':', label='Best Case')
     
+    asset_allocation_str = " / ".join(
+        [f"{asset_name}: {asset_info['allocation']:.0%}" for asset_name, asset_info in params['assets'].items()]
+    )
+    
     ax.set_title(f"Retirement Portfolio Projection ({params['retirement_years']} Years)\n"
                  f"Initial: ${params['initial_portfolio']:,.0f} | "
                  f"Withdrawal: ${params['annual_withdrawal']:,.0f}/yr | "
@@ -34,8 +38,7 @@ def visualize_results(results_df, depletion_prob, params, best_sim, worst_sim):
 
     # Add statistics box with adjusted position
     stats_text = (
-        f"Asset Allocation: {params['asset_allocation']['stocks']:.0%} Stocks / "
-        f"{params['asset_allocation']['bonds']:.0%} Bonds\n"
+        f"Asset Allocation: {asset_allocation_str}\n"
         f"Simulations Run: {params['n_simulations']:,}\n"
         f"Final Value Ranges:\n"
         f"- Best Case: ${best_sim[-1]:,.0f}\n"

@@ -12,18 +12,18 @@ def run_retirement_simulation(params):
     Returns:
         tuple: (simulation results DataFrame, depletion probability, best_simulation, worst_simulation)
     """
-    required_keys = ['initial_portfolio', 'asset_allocation', 
-                     'annual_withdrawal', 'retirement_years', 'n_simulations', 'tickers']
+    required_keys = ['initial_portfolio', 'annual_withdrawal', 
+                     'retirement_years', 'n_simulations', 'assets']
     if not all(key in params for key in required_keys):
         raise ValueError("Missing required parameters in input dictionary")
 
     initial_value = params['initial_portfolio']
-    allocation = params['asset_allocation']
     withdrawal = params['annual_withdrawal']
     years = params['retirement_years']
     n_sims = params['n_simulations']
-    tickers = params['tickers']
+    assets = params['assets']
 
+    tickers = [asset['ticker'] for asset in assets.values()]
     returns_data = fetch_historical_data(tickers)
     
     simulations = []
@@ -52,14 +52,11 @@ def run_retirement_simulation(params):
             
             portfolio -= withdrawal
 
-            stock_return = selected_returns.iloc[year]['^GSPC']
-            bond_return = selected_returns.iloc[year]['^FVX']
-            portfolio *= (allocation['stocks'] * (1 + stock_return) +
-                         allocation['bonds'] * (1 + bond_return))
-
-            stock_value = portfolio * allocation['stocks']
-            bond_value = portfolio * allocation['bonds']
-            portfolio = stock_value + bond_value
+            for asset_name, asset_info in assets.items():
+                ticker = asset_info['ticker']
+                allocation = asset_info['allocation']
+                asset_return = selected_returns.iloc[year][ticker]
+                portfolio += portfolio * allocation * asset_return
 
             history.append(portfolio)
         
