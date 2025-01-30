@@ -1,30 +1,24 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="retirement_simulation",
-    version="0.1.0",
+    name='retirementTester',
+    version='0.1.0',
+    description='A retirement portfolio simulation tool',
+    author='Jon Errasti',
+    author_email='errasti13@gmail.com',
     packages=find_packages(),
+    include_package_data=True,
     install_requires=[
-        "yfinance",
-        "pandas",
-        "numpy",
-        "matplotlib"
+        'Flask>=2.0.0',
+        'pandas>=1.3.0',
+        'numpy>=1.21.0',
+        'matplotlib>=3.4.0',
+        'yfinance>=0.1.63',
+        'streamlit>=0.84.0'
     ],
-    author="Jon Errasti",
-    author_email="errasti13@gmail.com",
-    description="A retirement portfolio simulation tool using historical market data.",
-    long_description=open("README.md").read(),
-    long_description_content_type="text/markdown",
-    url="https://github.com/errasti13/retirement_simulation",  # Update with your actual repo
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-    ],
-    python_requires=">=3.7",
     entry_points={
-        "console_scripts": [
-            "retirement-sim=retirement_simulation.scripts.run_simulation:main",
+        'console_scripts': [
+            'run_simulation=scripts.run_simulation:main',
         ],
     },
 )
