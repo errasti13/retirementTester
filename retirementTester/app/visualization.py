@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from .utils import SimulationParams
+import streamlit as st
 
 def visualize_results(results_df, depletion_prob, params: SimulationParams, best_sim, worst_sim):
     """
@@ -22,16 +23,22 @@ def visualize_results(results_df, depletion_prob, params: SimulationParams, best
     ax.plot(worst_sim, color='red', linewidth=2, linestyle=':', label='Worst Case')
     ax.plot(best_sim, color='green', linewidth=2, linestyle=':', label='Best Case')
     
-    asset_allocation_str = " / ".join(
-        [f"{asset_name}: {asset_info['allocation']:.0%}" 
-         for asset_name, asset_info in params.assets.items()]
-    )
+    title = "Retirement Portfolio Projection"
+    if params is not None:
+        title += f" ({params.retirement_years} Years)\n"
+        title += f"Initial: ${params.initial_portfolio:,.0f} | "
+        title += f"Withdrawal: ${params.annual_withdrawal:,.0f}/yr | "
+        
+        if hasattr(params, 'assets'):
+            asset_allocation_str = " / ".join(
+                [f"{asset_name}: {asset_info['allocation']:.0%}" 
+                for asset_name, asset_info in params.assets.items()]
+            )
+            title += f"\n{asset_allocation_str}"
     
-    ax.set_title(f"Retirement Portfolio Projection ({params.retirement_years} Years)\n"
-                 f"Initial: ${params.initial_portfolio:,.0f} | "
-                 f"Withdrawal: ${params.annual_withdrawal:,.0f}/yr | "
-                 f"Depletion Risk: {depletion_prob:.1%}",
-                 pad=20)
+    title += f"\nDepletion Risk: {depletion_prob:.1%}"
+    ax.set_title(title, pad=20)
+    
     ax.set_xlabel("Years Into Retirement")
     ax.set_ylabel("Portfolio Value")
     ax.yaxis.set_major_formatter(usd_formatter)
@@ -39,4 +46,4 @@ def visualize_results(results_df, depletion_prob, params: SimulationParams, best
     ax.legend()
     
     plt.tight_layout()
-    plt.show()
+    st.pyplot(fig) 

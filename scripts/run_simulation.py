@@ -1,6 +1,6 @@
-from retirementTester.simulation import *
-from retirementTester.visualization import *
-from retirementTester.utils import setup_simulation_params
+from retirementTester.app.simulation import *
+from retirementTester.app.visualization import *
+from retirementTester.app.utils import setup_simulation_params
 
 def main():
 

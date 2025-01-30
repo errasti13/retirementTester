@@ -80,23 +80,27 @@ def convert_assets_to_tickers(assets: Dict[str, float]) -> Dict[str, AssetInfo]:
         logger.error(f"Invalid asset name: {e}")
         raise KeyError(f"Asset {e} not found in available assets")
 
-def setup_simulation_params(**kwargs) -> SimulationParams:
+def setup_simulation_params(initial_portfolio, annual_withdrawal, retirement_years, n_simulations, assets):
     """
     Set up and validate simulation parameters.
     
     Args:
-        **kwargs: Keyword arguments for SimulationParams.
+        initial_portfolio: Initial portfolio value.
+        annual_withdrawal: Annual withdrawal amount.
+        retirement_years: Number of retirement years.
+        n_simulations: Number of simulations.
+        assets: Dictionary of asset allocations.
     
     Returns:
         SimulationParams object with validated parameters.
     """
     try:
-        assets_with_tickers = convert_assets_to_tickers(kwargs['assets'])
+        assets_with_tickers = convert_assets_to_tickers(assets)
         return SimulationParams(
-            initial_portfolio=kwargs['initial_portfolio'],
-            annual_withdrawal=kwargs['annual_withdrawal'],
-            retirement_years=kwargs['retirement_years'],
-            n_simulations=kwargs['n_simulations'],
+            initial_portfolio=initial_portfolio,
+            annual_withdrawal=annual_withdrawal,
+            retirement_years=retirement_years,
+            n_simulations=n_simulations,
             assets=assets_with_tickers
         )
     except (KeyError, ValueError) as e:
