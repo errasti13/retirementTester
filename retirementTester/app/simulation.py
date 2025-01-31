@@ -2,7 +2,7 @@ from typing import Tuple, List, Optional
 import numpy as np
 import pandas as pd
 import logging
-from .data import fetch_historical_data
+from .data_fetcher import get_asset_data
 from .utils import SimulationParams
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,8 @@ def run_retirement_simulation(
     """
     try:
         tickers = tuple(asset['ticker'] for asset in params.assets.values())  # Convert to tuple
-        returns_data = fetch_historical_data(tickers)
+        # Use pre-fetched data
+        returns_data = get_asset_data(tickers)
         
         simulations = []
         depletion_count = 0

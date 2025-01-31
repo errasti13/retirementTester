@@ -65,38 +65,63 @@ def fetch_historical_data(
     """
     logger.info(f"Fetching historical data for tickers: {tickers}")
     
+    all_data = []
+    
     try:
         # Validate inputs
         if not tickers:
             raise ValueError("No tickers provided")
         start_date, end_date = validate_dates(start_date, end_date)
         
-        # Fetch data
-        data = yf.download(list(tickers), start=start_date, end=end_date, progress=False)
-        if data.empty:
-            raise RuntimeError("No data retrieved")
-            
-        if 'Close' not in data:
-            available_cols = data.keys() if isinstance(data, pd.DataFrame) else "No columns"
-            raise RuntimeError(f"'Close' prices not found. Available columns: {available_cols}")
+        for ticker in tickers:
+            try:
+                # Fetch data for each ticker individually
+                data = yf.download(ticker, start=start_date, end=end_date, progress=False)
+                if data.empty:
+                    logger.warning(f"No data retrieved for ticker: {ticker}")
+                    continue
+                
+                # Check for 'Adj Close' and fall back to 'Close' if necessary
+                if 'Adj Close' in data:
+                    close_prices = data['Adj Close']
+                elif 'Close' in data:
+                    close_prices = data['Close']
+                    logger.warning(f"'Adj Close' prices not found for {ticker}, using 'Close' prices instead")
+                else:
+                    available_cols = data.keys() if isinstance(data, pd.DataFrame) else "No columns"
+                    logger.warning(f"Neither 'Adj Close' nor 'Close' prices found for {ticker}. Available columns: {available_cols}")
+                    continue
 
-        # Process data
-        close_prices = data['Close']
-        daily_returns = close_prices.pct_change(fill_method=None).dropna()
-        annual_returns = daily_returns.resample('YE').apply(lambda x: (1 + x).prod() - 1)
+                # Process data
+                daily_returns = close_prices.pct_change(fill_method=None).dropna()
+                annual_returns = daily_returns.resample('YE').apply(lambda x: (1 + x).prod() - 1)
+                
+                if annual_returns.empty:
+                    logger.warning(f"No annual returns calculated for ticker: {ticker}")
+                    continue
+                
+                annual_returns.name = ticker
+                all_data.append(annual_returns)
+            
+            except Exception as e:
+                logger.warning(f"Failed to fetch {ticker}: {str(e)}")
+        
+        if not all_data:
+            raise RuntimeError("No data retrieved for any ticker")
+        
+        # Combine all data into a single DataFrame
+        combined_data = pd.concat(all_data, axis=1)
         
         # Validate output
-        if annual_returns.empty:
-            raise RuntimeError("No annual returns calculated")
-        if annual_returns.isnull().any().any():
-            logger.warning("NaN values present in annual returns")
+        if combined_data.isnull().any().any():
+            logger.warning("NaN values present in combined annual returns")
             
         # Ensure minimum years of data
-        if len(annual_returns) < MarketDataConfig.MIN_YEARS_DATA:
+        if len(combined_data) < MarketDataConfig.MIN_YEARS_DATA:
             logger.warning(f"Less than {MarketDataConfig.MIN_YEARS_DATA} years of data available")
             
         logger.info(f"Successfully processed data for {len(tickers)} tickers")
-        return annual_returns
+        return combined_data
 
     except Exception as e:
         logger.error(f"Failed to fetch historical data: {str(e)}")

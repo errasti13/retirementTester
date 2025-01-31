@@ -2,6 +2,7 @@ import streamlit as st
 from retirementTester.app.simulation import run_retirement_simulation
 from retirementTester.app.utils import setup_simulation_params
 from retirementTester.app.components.asset_selector import asset_allocation_selector
+from retirementTester.app.data_fetcher import get_data_start_date
 
 def simulation_form():
     initial_portfolio = st.number_input("Initial Portfolio ($)", value=1.5e6)

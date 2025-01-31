@@ -1,9 +1,17 @@
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-from .utils import SimulationParams
+from typing import List
+import pandas as pd
 import streamlit as st
+from .utils import SimulationParams
 
-def visualize_results(results_df, depletion_prob, params: SimulationParams, best_sim, worst_sim):
+def visualize_results(
+    results_df: pd.DataFrame, 
+    depletion_prob: float, 
+    params: SimulationParams, 
+    best_sim: List[float], 
+    worst_sim: List[float]
+) -> None:
     """
     Generate professional visualizations of simulation results.
     """
@@ -46,4 +54,4 @@ def visualize_results(results_df, depletion_prob, params: SimulationParams, best
     ax.legend()
     
     plt.tight_layout()
-    st.pyplot(fig) 
+    st.pyplot(fig)
