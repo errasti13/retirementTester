@@ -37,10 +37,6 @@ def asset_allocation_selector():
     total_allocation = 0
     new_allocations = {}
     
-    # Add a progress bar for total allocation
-    st.write("Total Allocation Progress:")
-    progress_bar = st.progress(0)
-    
     for asset in st.session_state.selected_assets:
         col1, col2 = st.columns([4, 1])
         with col1:
