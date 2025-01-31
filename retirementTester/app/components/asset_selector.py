@@ -37,6 +37,10 @@ def asset_allocation_selector():
     total_allocation = 0
     new_allocations = {}
     
+    # Add a progress bar for total allocation
+    st.write("Total Allocation Progress:")
+    progress_bar = st.progress(0)
+    
     for asset in st.session_state.selected_assets:
         col1, col2 = st.columns([4, 1])
         with col1:
@@ -51,9 +55,8 @@ def asset_allocation_selector():
                 del st.session_state.allocations[asset]
                 st.rerun()
     
-    # Warning for incorrect allocation
-    if abs(total_allocation - 100) > 0.01:
-        st.warning(f"Total allocation must be 100% (current: {total_allocation}%)")
+    if total_allocation > 100:
+        st.error(f"❌ Total allocation exceeds 100% by {total_allocation - 100}%. Please reduce some allocations.")
         return None
     
     st.session_state.allocations = new_allocations
