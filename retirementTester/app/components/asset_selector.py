@@ -58,6 +58,10 @@ def asset_allocation_selector():
     if total_allocation > 100:
         st.error(f"❌ Total allocation exceeds 100% by {total_allocation - 100}%. Please reduce some allocations.")
         return None
+    elif total_allocation < 100:
+        st.warning(f"⚠️ Total allocation is less than 100%. Please allocate the remaining {100 - total_allocation}%.")
+    elif total_allocation == 100:
+        st.success("✅ Total allocation is 100%.")
     
     st.session_state.allocations = new_allocations
     return new_allocations
